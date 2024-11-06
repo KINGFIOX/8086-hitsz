@@ -1,0 +1,42 @@
+DATA SEGMENT
+    SRC DB 0, -1, 2, -3, 4, -5, 6, -7, 8, -9   
+    DST DB 10 DUP (?)
+DATA  ENDS
+
+STACK SEGMENT
+    DB 256 DUP (0)
+STACK ENDS
+
+CODE  SEGMENT
+    ASSUME CS:CODE, DS:DATA, SS:STACK
+
+START:
+    MOV AX, DATA
+    MOV DS, AX
+    MOV AX, STACK
+    MOV SS, AX
+    MOV SP, 256
+
+    LEA SI, SRC
+    LEA DI, DST
+
+    MOV CX, 10
+
+LOOP_START:
+    MOV AL, [SI]
+
+    CMP AL, 0
+    JL  SKIP_COPY
+
+    MOV [DI], AL
+    INC DI
+
+SKIP_COPY:
+    INC  SI
+    LOOP LOOP_START
+
+    MOV AH, 4CH
+    INT 21H
+
+CODE ENDS
+END  START

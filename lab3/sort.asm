@@ -1,0 +1,94 @@
+DATA SEGMENT
+    a      DB 10,6,24,39,33,77,15,100,36,4 
+    n      DB 10
+    result DW ?
+DATA  ENDS
+
+STACK SEGMENT
+    DB 256 DUP (0)
+STACK     ENDS
+
+CODE      SEGMENT
+ASSUME CS:CODE, DS:DATA, SS:STACK
+
+SUM_ARRAY MACRO
+    PUSH AX
+    PUSH BX
+    PUSH CX
+    PUSH SI
+
+    MOV CX, n
+    LEA SI, a
+    XOR AX, AX
+
+SUM_LOOP:
+    MOV  BL, [SI]
+    MOV  BH, 0
+    ADD  AX, BX
+    INC  SI
+    LOOP SUM_LOOP
+
+    MOV result, AX
+
+    POP SI
+    POP CX
+    POP BX
+    POP AX
+ENDM
+
+SORT PROC
+    PUSH BP
+    MOV  BP, SP
+    PUSH SI
+    PUSH AX
+    PUSH CX
+    PUSH DX
+
+    MOV CX, n
+    DEC CX
+
+OUTER_LOOP:
+    MOV SI, OFFSET a
+    MOV DX, CX
+
+INNER_LOOP:
+    MOV AL, [SI]
+    MOV AH, [SI+1]
+    CMP AL, AH
+    JLE NO_SWAP
+
+    MOV [SI],   AH
+    MOV [SI+1], AL
+
+NO_SWAP:
+    INC SI
+    DEC DX
+    JNZ INNER_LOOP
+
+    DEC CX
+    JNZ OUTER_LOOP
+
+    POP DX
+    POP CX
+    POP AX
+    POP SI
+    POP BP
+    RET
+SORT ENDP
+
+START:
+    MOV AX, DATA
+    MOV DS, AX
+    MOV AX, STACK
+    MOV SS, AX
+    MOV SP, 256
+
+    CALL SORT
+
+    SUM_ARRAY
+
+    MOV AH, 4CH
+    INT 21H
+
+CODE ENDS
+END  START
